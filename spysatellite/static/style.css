@@ -1,0 +1,116 @@
+body {
+    font-size: calc(10px + 0.35vw);
+    font-family: sans-serif;
+    color: #010;
+    
+    margin: 0px !important;
+    
+    background: #434343 url(/static/background.jpg) no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+* { margin: 0px; }
+*:not(a) + * {
+    margin-top: 0.5em; /*calc(1.25px + 0.5vw);
+    margin-bottom: calc(1.25px + 0.5vw);*/
+}
+
+
+section, .logo_box {
+    margin: calc(5px + 2vw);
+    margin-left: auto;
+    margin-right: auto;
+    padding: calc(5px + 2vw);
+    max-width: calc(500px + 26vw);
+    background-color: rgba(255, 255, 255, 0.5);
+}
+section:first-of-type {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.logo_box { display: table; }
+.logo_box>img {
+    width: 8em;
+    height: 8em;
+}
+
+footer {
+    position: relative;
+    bottom: calc(5px + 1vw);
+    height: 0;
+    overflow: visible;
+    
+    font-style: italic;
+    font-size: 0.5em;
+    text-align: center;
+}
+
+a {
+    color: inherit;
+    font-family: inherit;
+}
+h1>a, h2>a, h3>a, h4>a {
+    text-decoration: none;
+}
+
+button {
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-size: inherit;
+    
+    display: table;
+    
+    /*margin: calc(10px + 0.3vw);*/
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.5em;
+    
+    color: inherit;
+    background-color: #fff;
+    cursor: pointer;
+    
+    font-family: sans-serif;
+    text-decoration: none;
+    font-weight: 300;
+}
+button:hover {
+    background-color: #010;
+    color: #fff;
+}
+
+/* fucking hell Firefox, honestly 
+   https://stackoverflow.com/questions/7928521/ */
+button::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner {
+    padding: 0 !important;
+    border: 0 none !important;
+}
+
+input[type="text"] {
+    /*display: table;*/
+    
+    text-align: inherit;
+    font-size: inherit;
+    font-family: Courier, monospace;
+    
+    border: none;
+    border-radius: 0;
+    background-color: #fff;
+    
+    width: calc(200px + 20vw);
+    /*margin: calc(10px + 0.3vw);*/
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.5em;
+
+    -webkit-appearance: none;
+}
+

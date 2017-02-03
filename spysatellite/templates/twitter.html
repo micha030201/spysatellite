@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}: Twitter to RSS{% endblock %}
+
+{% block body %}
+<section>
+  <h1>Twitter to RSS</h1>
+  <form action="{{ url_for('twitter_searchbar') }}" method="post">
+    <label>
+      <p><i>@nickname, #hashtag, search terms:</i></p>
+      <input type="text" name="input_string" autocomplete="off" placeholder="..." required />
+    </label>
+    <button class="button" type="submit">Get the feed</button>
+  </form>
+</section>
+<section>
+  <div>
+    <h4>So what is this?</h4>
+    <p>
+    SpySatellite is a service for converting Twitter streams into Atom feeds. Supports user tweets, tweets for a certain hashtag, as well as search results.<br />
+    It is written in Python, using Flask and Beautiful Soup. The code is open-source and <a href="whoops">available on GitHub</a>.
+    </p>
+  </div>
+  <div>
+    <h4>Doesn't this sort of thing already exist?</h4>
+    <p>
+    You are right, there already are several services doing this. Unfortunately, none of them work particularly well. I had the most luck with <a href="https://twitrss.me/">TwitRSS.me</a>, but even it can't correctly handle a lot of stuff, uncluding quotes, multiple images, and line breaks.<br />
+    SpySatellite can.
+    </p>
+  </div>
+  <div>
+    <h4>Alright so what <i>can't</i> it do then?</h4>
+    <p>
+      SpySatellite doesn't do replies correctly: only the reply is shown, not the full chain of tweets. So you know this is a reply, but don't know to what exactly. Hence why they are disabled in feeds by default. In my defence, this is exactly the way it's done on the Twitter website.<br />
+      Twitter media, in the form of videos and fat JavaScript frames Twitter calls "gifs" for some bizzare reason, are also not shown. Instead, they're replaced with an explanatory note and a random cat gif. Actual gif, yes. Hope you enjoy.
+    </p>
+  </div>
+  <div>
+    <h4>Can I still enable replies?</h4>
+    <p>
+      Yes you can, add <kbd>/with_replies</kbd> at the end of the feed url.
+    </p>
+  </div>
+  <div>
+    <h4>How long are feeds cached for?</h4>
+    <p>
+      17 minutes, as of right now. May be changed in the future.
+    </p>
+  </div>
+</section>
+{% endblock %}

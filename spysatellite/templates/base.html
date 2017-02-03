@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SpySatellite{% block title %}{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--<meta name="description" content="">-->
+  <meta name="keywords" content="rss, atom, feed, twitter">
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+  <body>
+    <div class="logo_box">
+      <img src="{{ url_for('static', filename='logo.svg') }}" />
+    </div>
+    {% block body %}{% endblock %}
+    <footer>
+      <b>Background image by ROSCOSMOS.</p>
+    </footer>
+  </body>
+</html>

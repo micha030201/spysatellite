@@ -130,14 +130,11 @@ def parse_tweet_element(branch):
     )
 
 def scrape(twitter_path, title='twitter feed'):
-    try:
-        r = requests.get(get_fullpath(twitter_path),
-                         headers=HEADERS, timeout=5)
-        r.raise_for_status()
-    except (requests.exceptions.Timeout,
-            requests.exceptions.HTTPError,
-            requests.exceptions.ConnectionError):
-        return 'Request to Twitter failed', 424
+    r = requests.get(get_fullpath(twitter_path),
+                     headers=HEADERS, timeout=5)
+    if r.status_code == 404:
+        return 'Twitter returned 404: Not Found. Check your spelling.', 424    
+    r.raise_for_status()
     
     soup = BeautifulSoup(r.text, 'html5lib')
     

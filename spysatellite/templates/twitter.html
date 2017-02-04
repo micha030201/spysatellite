@@ -42,9 +42,18 @@
     </p>
   </div>
   <div>
-    <h4>How long are feeds cached for?</h4>
+    <h4>What are the limits?</h4>
     <p>
-      17 minutes, as of right now. May be changed in the future.
+      Feeds are cached for 17 minutes, as of right now. Rate limit is 6 requests per minute, after the burst of 50 requests. Should be enough.<br />
+      May be changed in the future.
+    </p>
+  </div>
+  <div>
+    <h4>Something doesn't work!</h4>
+    <p>
+      If you're getting empty search feeds, it means that Twitter did not find anything for your input. Try searching for something else.<br />
+      Error 500 is most likely the result of Twitter putting something weird in the Tweet markup. They really like doing that. The piece of offending HTML has been logged, and the best thing you can do is wait until I look at the log and add yet another edge case. Or, less likely, it might mean that Twitter is down.
+      If something in the feed itself is broken, please <a href="whoops">report the issue on GitHub</a>. 
     </p>
   </div>
 </section>

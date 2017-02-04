@@ -13,11 +13,12 @@ body {
 }
 
 * { margin: 0px; }
-*:not(a) + * {
-    margin-top: 0.5em; /*calc(1.25px + 0.5vw);
-    margin-bottom: calc(1.25px + 0.5vw);*/
+* + * {
+    margin-top: 0.5em;
 }
+br { margin: 0px !important; }
 
+ul { padding: 0px; }
 
 section, .logo_box {
     margin: calc(5px + 2vw);
@@ -25,7 +26,7 @@ section, .logo_box {
     margin-right: auto;
     padding: calc(5px + 2vw);
     max-width: calc(500px + 26vw);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.7);
 }
 section:first-of-type {
     font-size: 1.5em;
@@ -66,7 +67,6 @@ button {
     
     display: table;
     
-    /*margin: calc(10px + 0.3vw);*/
     margin-left: auto;
     margin-right: auto;
     padding: 0.5em;
@@ -84,7 +84,7 @@ button:hover {
     color: #fff;
 }
 
-/* fucking hell Firefox, honestly 
+/* Firefox, honestly 
    https://stackoverflow.com/questions/7928521/ */
 button::-moz-focus-inner,
 input[type="button"]::-moz-focus-inner,
@@ -95,8 +95,6 @@ input[type="reset"]::-moz-focus-inner {
 }
 
 input[type="text"] {
-    /*display: table;*/
-    
     text-align: inherit;
     font-size: inherit;
     font-family: Courier, monospace;
@@ -106,7 +104,6 @@ input[type="text"] {
     background-color: #fff;
     
     width: calc(200px + 20vw);
-    /*margin: calc(10px + 0.3vw);*/
     margin-left: auto;
     margin-right: auto;
     padding: 0.5em;

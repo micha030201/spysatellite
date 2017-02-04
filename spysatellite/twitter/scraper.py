@@ -137,7 +137,7 @@ def scrape(twitter_path, title='twitter feed'):
         return 'Twitter returned 404: Not Found. Check your spelling.', 424    
     r.raise_for_status()
     
-    soup = BeautifulSoup(r.text, 'html5lib')
+    soup = BeautifulSoup(r.text, 'lxml')
     
     feed =  AtomFeed(
         title=title,

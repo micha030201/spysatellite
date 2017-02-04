@@ -101,11 +101,12 @@ def parse_tweet_element(branch):
     else:
         tweet_type = 'Tweet'
     
-    tweet_id = branch['data-tweet-id']
+    #tweet_id = branch['data-tweet-id']
     tweet_link = get_fullpath(branch['data-permalink-path'])
     
     author_nick = branch['data-screen-name']
     author_name = branch['data-name']
+    author = author_name + ' @' + author_nick
     
     time_posted = datetime.fromtimestamp(int(
         branch.select_one('span._timestamp')['data-time']
@@ -122,9 +123,9 @@ def parse_tweet_element(branch):
         title=tweet_type,
         content=tweet_content,
         content_type='html',
-        author=author_name,
+        author=author,
         url=tweet_link,
-        id=tweet_id,
+        id=tweet_link,
         updated=time_posted,
         published=time_posted
     )

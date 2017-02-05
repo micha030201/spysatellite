@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from random import randint
 
 import requests
 from bs4 import BeautifulSoup
@@ -11,12 +10,8 @@ from flask import request
 from spysatellite import app, HEADERS
 
 
-def remove_spaces(string):
-    return ' '.join(string.split())
-
 def get_fullpath(path):
-    path = remove_spaces(path).strip()
-    path = path.strip('/')
+    path = path.strip().strip('/')
     return 'https://twitter.com/' + path
 
 # Yes, it is easier than getting the href attribute
@@ -31,30 +26,25 @@ def get_hashtag_fullpath(hashtag):
 
 def make_link(url, text=None):
     text = text or url
-    return '<a href="{}" rel="noreferrer" target="_blank">{}</a>'.format(url, text)
+    return ('<a href="{}" rel="noreferrer"'
+            ' target="_blank">{}</a>').format(url, text)
 
 def make_image(url):
     return '<br /><img src="{}" />'.format(url)
 
 def make_quote(text, author_name, author_handle):
-    return '''
-        <p><strong>{}</strong> {}:</p>
-        <blockquote><p>{}</p></blockquote>
-    '''.format(author_name,
-               make_link(get_handle_fullpath(author_handle),
-                         text=author_handle.strip()),
-               text)
+    return ('<p><strong>{}</strong> {}:</p>'
+            '<blockquote><p>{}</p></blockquote>').format(
+        author_name,
+        make_link(
+            get_handle_fullpath(author_handle),
+            text=author_handle.strip()
+        ),
+        text
+    )
 
 def make_not_supported():
-    return '''
-        <br /><br />
-        <i>This media type is not supported :(
-        <br />
-        Here, have a cat gif instead:</i>
-    ''' + make_image(
-        'http://thecatapi.com/api/images/get?format=src&type=gif&nvm=' +
-        str(randint(0, 999))
-    )
+    return '<br /><i>[UNSUPPORTED-MEDIA]</i>'
 
 
 class Ignore(Exception):
@@ -64,10 +54,10 @@ def parse_text_content(node):
     for subnode in node.children:
         if subnode.name == None:  # Just strings
             yield escape(subnode).replace('\n', '<br />')
+        elif subnode.name == 'strong':  # May not have class
+            yield escape(subnode.string)
         elif 'u-hidden' in subnode['class']:  # Stuff we don't care about
             continue
-        elif subnode.name == 'strong':  # Because it's a thing apparently
-            yield escape(subnode.string)
         elif subnode.name == 'img':  # Emoji
             yield subnode['alt']
         elif 'twitter-hashflag-container' in subnode['class']:

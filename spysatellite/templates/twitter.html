@@ -25,14 +25,14 @@
     <li>
       <h4>Doesn't this sort of thing already exist?</h4>
       <p>
-        You are right, there already are several services doing this. Unfortunately, none of them work particularly well. I had the most luck with <a href="https://twitrss.me/">TwitRSS.me</a>, but it can't correctly handle a lot of stuff, uncluding quotes, multiple images, and line breaks. They motivate this behaviour by the intention to keep compatible with the v1 API, which would probably make some sort of sense to me had I arrived to the Twitter to RSS scene a few years ago, but alas.
+        You are right, there already are several services doing this. Unfortunately, none of them work particularly well. The only one that worked for me at all was <a href="https://twitrss.me/">TwitRSS.me</a>, but even it can't correctly handle a lot of stuff, uncluding quotes, multiple images, emoji, and line breaks. They motivate this behaviour by the intention to keep compatible with the v1 API, which I would probably have a bigger attachement to had I arrived at the Twitter RSS scene a few years ago, but alas.
       </p>
     </li>
     <li>
       <h4>Is there anything that your service can't do?</h4>
       <p>
         SpySatellite doesn't do replies correctly: only the reply is shown, not the full chain of tweets. So you know this is a reply, but don't know to what exactly. Hence why they are disabled in feeds by default. In my defence, this is exactly the way it's done on the Twitter website.<br />
-        Twitter media, in the form of videos and fat JavaScript frames Twitter calls "gifs" for some bizzare reason, are also not shown. Instead, they're replaced with an explanatory note and a random cat gif. Actual gif, yes. Hope you enjoy.
+        Twitter media, in the form of videos and fat JavaScript frames Twitter calls "gifs" for some bizzare reason, are also not shown.
       </p>
     </li>
     <li>
@@ -48,14 +48,14 @@
         May be changed later, obviously.
       </p>
     </li>
-    <li>
+    <!--<li>
       <h4>Something isn't working!</h4>
       <p>
         If you're getting empty search feeds, it means that Twitter did not find anything for your input. Try searching for something else.<br />
         Error 500 is most likely the result of Twitter putting something weird in the Tweet markup. They really like doing that. The piece of offending HTML has been logged, and the best thing you can do is wait until I look at the log and add yet another edge case. Or it might also mean that Twitter is down.<br/>
         If something in the feed itself is broken, please <a href="https://github.com/micha030201/spysatellite/issues/">report the issue on GitHub</a>. 
       </p>
-    </li>
+    </li>-->
   </ul>
 </section>
 {% endblock %}

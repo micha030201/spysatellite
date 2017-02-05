@@ -3,6 +3,7 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
+from werkzeug.utils import escape
 from werkzeug.contrib.atom import AtomFeed, FeedEntry
 from flask import request
 
@@ -18,7 +19,7 @@ def parse_text_content(node):
     output = ''
     for subnode in node.children:
         if subnode.name == None:  # Just strings
-            output += subnode.replace('\n', '<br />')
+            output += escape(subnode.replace('\n', '<br />'))           # escape is VERY important here: !!COMPLETE!!
         elif subnode.name == 'strong':  # Because it's a thing apparently
             output += str(subnode.string)
         elif 'u-hidden' in subnode['class']:  # Stuff we don't care about

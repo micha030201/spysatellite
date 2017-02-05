@@ -61,80 +61,75 @@ class Ignore(Exception):
     pass
 
 def parse_text_content(node):
-    output = ''
     for subnode in node.children:
         if subnode.name == None:  # Just strings
-            output += escape(subnode).replace('\n', '<br />')           # escape is VERY important here: !!COMPLETE!!
-        elif subnode.name == 'strong':  # Because it's a thing apparently
-            output += str(subnode.string)
+            yield escape(subnode).replace('\n', '<br />')
         elif 'u-hidden' in subnode['class']:  # Stuff we don't care about
             continue
+        elif subnode.name == 'strong':  # Because it's a thing apparently
+            yield escape(subnode.string)
         elif subnode.name == 'img':  # Emoji
-            output += subnode['alt']
-        # Direct tweets:
-        elif subnode.name == 'a' and 'twitter-hashtag' in subnode['class']:
-            output += make_link(
-                get_hashtag_fullpath(subnode.text),
-                text=subnode.text
-            )
-        elif subnode.name == 'a' and 'twitter-atreply' in subnode['class']:
-            output += make_link(
-                get_handle_fullpath(subnode.text),
-                text=subnode.text
-            )
-        elif subnode.name == 'a':
-            output += make_link(subnode['data-expanded-url'])
+            yield subnode['alt']
         elif 'twitter-hashflag-container' in subnode['class']:
             # Hashtags with emoji, because life is never easy
-            output += make_link(
-                get_handle_fullpath(subnode.a.text),
-                text=subnode.a.text  # The emoji is thrown out, yes
+            yield make_link(
+                get_hashtag_fullpath(subnode.a.text),
+                # The emoji is not actually a part of hashtag though
+                text=subnode.a.text
             )
-        # Quoted tweets:
-        elif subnode.name == 'span' and 'twitter-hashtag' in subnode['class']:
-            output += make_link(
+        elif (subnode.name in ('a', 'span') and
+              'twitter-hashtag' in subnode['class']):
+            yield make_link(
                 get_hashtag_fullpath(subnode.text),
                 text=subnode.text
             )
-        elif subnode.name == 'span' and 'twitter-atreply' in subnode['class']:
-            output += make_link(
+        elif (subnode.name in ('a', 'span') and
+              'twitter-atreply' in subnode['class']):
+            yield make_link(
                 get_handle_fullpath(subnode.text),
                 text=subnode.text
             )
-        elif subnode.name == 'span':
-            output += make_link(subnode['data-expanded-url'])
-    return output
+        elif subnode.name in ('a', 'span'):
+            yield make_link(subnode['data-expanded-url'])
 
-def parse_media_content(branch):  # Operates levels above parse_text
-    output = ''
-    if branch.select_one('.QuoteTweet'):
-        branch = branch.select_one('.QuoteTweet .tweet-content')
-        quote_tweet_text = parse_text_content(
+def parse_media_content(branch):
+    for node in branch.select('.AdaptiveMedia-photoContainer'):
+        yield make_image(node['data-image-url'])
+    if branch.select_one('.PlayableMedia'):
+        yield make_not_supported()
+
+def parse_quote_content(branch):
+    def content():
+        yield from parse_text_content(
             branch.select_one('.QuoteTweet-text')
         )
         if branch.select_one('.QuoteMedia-photoContainer'):
-            quote_tweet_text += make_image(
+            yield make_image(
                 branch.select_one(
                     '.QuoteMedia-photoContainer'
                 )['data-image-url']
             )
         elif branch.select_one('.QuoteMedia-videoPreview'):
-            quote_tweet_text += make_not_supported()
-        output = make_quote(
-            quote_tweet_text,
-            # replace is there for &nbsp; spaces in emoji pictures
-            branch.select_one('.QuoteTweet-fullname').text.replace('\xa0', ''),
-            branch.select_one('.QuoteTweet-screenname').text
+            yield make_not_supported()
+    yield make_quote(
+        ''.join(content()),
+        # replace is there for &nbsp; spaces in emoji pictures
+        branch.select_one('.QuoteTweet-fullname').text.replace('\xa0', ''),
+        branch.select_one('.QuoteTweet-screenname').text
+    )
+
+def parse_full_tweet_content(branch):
+    yield from parse_text_content(branch.select_one('p.TweetTextSize'))
+    if branch.select_one('.QuoteTweet'):
+        yield from parse_quote_content(
+            branch.select_one('.QuoteTweet .tweet-content')
         )
     elif branch.select_one('.AdaptiveMedia'):
-        branch = branch.select_one('.AdaptiveMedia')
-        for node in branch.select('.AdaptiveMedia-photoContainer'):
-            output += make_image(node['data-image-url'])
-        if branch.select_one('.PlayableMedia'):
-            output = make_not_supported()
+        yield from parse_media_content(
+            branch.select_one('.AdaptiveMedia')
+        )
     elif branch.select_one('.card2'):
-        output = make_not_supported()
-    return output
+        yield make_not_supported()
 
 def parse_tweet_element(branch):
     branch = branch.div
@@ -148,7 +143,6 @@ def parse_tweet_element(branch):
     else:
         tweet_type = 'Tweet'
     
-    #tweet_id = branch['data-tweet-id']
     tweet_link = get_fullpath(branch['data-permalink-path'])
     
     author_nick = branch['data-screen-name']
@@ -159,12 +153,9 @@ def parse_tweet_element(branch):
         branch.select_one('span._timestamp')['data-time']
     ))
     
-    branch = branch.select_one('.content')
-    
-    tweet_text = parse_text_content(branch.select_one('p.TweetTextSize'))
-    tweet_media = parse_media_content(branch)
-    
-    tweet_content = remove_spaces(tweet_text + tweet_media)
+    tweet_content = ''.join(parse_full_tweet_content(
+        branch.select_one('.content')
+    ))
     
     return FeedEntry(
         title=tweet_type,
@@ -186,7 +177,7 @@ def scrape(twitter_path, title='twitter feed'):
     
     soup = BeautifulSoup(r.text, 'lxml')
     
-    feed =  AtomFeed(
+    feed = AtomFeed(
         title=title,
         feed_url=request.url,
         url=request.host_url,

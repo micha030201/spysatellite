@@ -2,7 +2,7 @@ def remove_spaces(string):
     return ' '.join(string.split())
 
 def get_fullpath(path):
-    path = remove_spaces(path).replace(' ', '')
+    path = remove_spaces(path).strip()
     path = path.strip('/')
     return 'https://twitter.com/' + path
 

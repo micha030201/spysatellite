@@ -76,7 +76,8 @@ def parse_media_content(branch):  # Operates levels above parse_text
             quote_tweet_text += html_wrap.not_supported()
         output = html_wrap.quote(
             quote_tweet_text,
-            branch.select_one('.QuoteTweet-fullname').text,
+            # replace is there for &nbsp; spaces in emoji pictures
+            branch.select_one('.QuoteTweet-fullname').text.replace('\xa0', ''),
             branch.select_one('.QuoteTweet-screenname').text
         )
     elif branch.select_one('.AdaptiveMedia'):

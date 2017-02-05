@@ -1,5 +1,6 @@
-from datetime import datetime
 import logging
+from datetime import datetime
+from random import randint
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,8 +9,52 @@ from werkzeug.contrib.atom import AtomFeed, FeedEntry
 from flask import request
 
 from spysatellite import app, HEADERS
-from spysatellite.twitter import html_wrap
-from spysatellite.twitter.functions import *
+
+
+def remove_spaces(string):
+    return ' '.join(string.split())
+
+def get_fullpath(path):
+    path = remove_spaces(path).strip()
+    path = path.strip('/')
+    return 'https://twitter.com/' + path
+
+# Yes, it is easier than getting the href attribute
+def get_handle_fullpath(handle):
+    return get_fullpath(handle.replace('@', ''))
+
+def get_hashtag_fullpath(hashtag):
+    hashtag = hashtag.replace('?src=hash', '').replace('#', '')
+    hashtag = 'hashtag/{}?f=tweets'.format(hashtag)
+    return get_fullpath(hashtag)
+
+
+def make_link(url, text=None):
+    text = text or url
+    return '<a href="{}" rel="noreferrer" target="_blank">{}</a>'.format(url, text)
+
+def make_image(url):
+    return '<br /><img src="{}" />'.format(url)
+
+def make_quote(text, author_name, author_handle):
+    return '''
+        <p><strong>{}</strong> {}:</p>
+        <blockquote><p>{}</p></blockquote>
+    '''.format(author_name,
+               make_link(get_handle_fullpath(author_handle),
+                         text=author_handle.strip()),
+               text)
+
+def make_not_supported():
+    return '''
+        <br /><br />
+        <i>This media type is not supported :(
+        <br />
+        Here, have a cat gif instead:</i>
+    ''' + make_image(
+        'http://thecatapi.com/api/images/get?format=src&type=gif&nvm=' +
+        str(randint(0, 999))
+    )
 
 
 class Ignore(Exception):
@@ -19,7 +64,7 @@ def parse_text_content(node):
     output = ''
     for subnode in node.children:
         if subnode.name == None:  # Just strings
-            output += escape(subnode.replace('\n', '<br />'))           # escape is VERY important here: !!COMPLETE!!
+            output += escape(subnode).replace('\n', '<br />')           # escape is VERY important here: !!COMPLETE!!
         elif subnode.name == 'strong':  # Because it's a thing apparently
             output += str(subnode.string)
         elif 'u-hidden' in subnode['class']:  # Stuff we don't care about
@@ -28,36 +73,36 @@ def parse_text_content(node):
             output += subnode['alt']
         # Direct tweets:
         elif subnode.name == 'a' and 'twitter-hashtag' in subnode['class']:
-            output += html_wrap.link(
+            output += make_link(
                 get_hashtag_fullpath(subnode.text),
                 text=subnode.text
             )
         elif subnode.name == 'a' and 'twitter-atreply' in subnode['class']:
-            output += html_wrap.link(
+            output += make_link(
                 get_handle_fullpath(subnode.text),
                 text=subnode.text
             )
         elif subnode.name == 'a':
-            output += html_wrap.link(subnode['data-expanded-url'])
+            output += make_link(subnode['data-expanded-url'])
         elif 'twitter-hashflag-container' in subnode['class']:
             # Hashtags with emoji, because life is never easy
-            output += html_wrap.link(
+            output += make_link(
                 get_handle_fullpath(subnode.a.text),
                 text=subnode.a.text  # The emoji is thrown out, yes
             )
         # Quoted tweets:
         elif subnode.name == 'span' and 'twitter-hashtag' in subnode['class']:
-            output += html_wrap.link(
+            output += make_link(
                 get_hashtag_fullpath(subnode.text),
                 text=subnode.text
             )
         elif subnode.name == 'span' and 'twitter-atreply' in subnode['class']:
-            output += html_wrap.link(
+            output += make_link(
                 get_handle_fullpath(subnode.text),
                 text=subnode.text
             )
         elif subnode.name == 'span':
-            output += html_wrap.link(subnode['data-expanded-url'])
+            output += make_link(subnode['data-expanded-url'])
     return output
 
 def parse_media_content(branch):  # Operates levels above parse_text
@@ -68,14 +113,14 @@ def parse_media_content(branch):  # Operates levels above parse_text
             branch.select_one('.QuoteTweet-text')
         )
         if branch.select_one('.QuoteMedia-photoContainer'):
-            quote_tweet_text += html_wrap.image(
+            quote_tweet_text += make_image(
                 branch.select_one(
                     '.QuoteMedia-photoContainer'
                 )['data-image-url']
             )
         elif branch.select_one('.QuoteMedia-videoPreview'):
-            quote_tweet_text += html_wrap.not_supported()
-        output = html_wrap.quote(
+            quote_tweet_text += make_not_supported()
+        output = make_quote(
             quote_tweet_text,
             # replace is there for &nbsp; spaces in emoji pictures
             branch.select_one('.QuoteTweet-fullname').text.replace('\xa0', ''),
@@ -84,11 +129,11 @@ def parse_media_content(branch):  # Operates levels above parse_text
     elif branch.select_one('.AdaptiveMedia'):
         branch = branch.select_one('.AdaptiveMedia')
         for node in branch.select('.AdaptiveMedia-photoContainer'):
-            output += html_wrap.image(node['data-image-url'])
+            output += make_image(node['data-image-url'])
         if branch.select_one('.PlayableMedia'):
-            output = html_wrap.not_supported()
+            output = make_not_supported()
     elif branch.select_one('.card2'):
-        output = html_wrap.not_supported()
+        output = make_not_supported()
     return output
 
 def parse_tweet_element(branch):

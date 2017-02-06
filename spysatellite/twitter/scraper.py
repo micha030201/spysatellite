@@ -53,7 +53,12 @@ class Ignore(Exception):
 def parse_text_content(node):
     for subnode in node.children:
         if subnode.name == None:  # Just strings
-            yield escape(subnode).replace('\n', '<br />')
+            yield (
+                escape(subnode)
+                # We're gonna hope noone's indenting with single spaces
+                .replace('  ', '&nbsp; ')
+                .replace('\n', '<br />')
+            )
         elif subnode.name == 'strong':  # May not have class
             yield escape(subnode.string)
         elif 'u-hidden' in subnode['class']:  # Stuff we don't care about

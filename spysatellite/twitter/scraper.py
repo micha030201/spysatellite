@@ -14,6 +14,14 @@ def get_fullpath(path):
     path = path.strip().strip('/')
     return 'https://twitter.com/' + path
 
+def unshorten_url(url):
+    return requests.get(
+        url,
+        allow_redirects=False,
+        # We would get 200 + js/http-equiv with browser User-Agent
+        headers={'User-Agent': ''}
+    ).headers['location']
+
 # Yes, it is easier than getting the href attribute
 def get_handle_fullpath(handle):
     return get_fullpath(handle.replace('@', ''))
@@ -31,6 +39,10 @@ def make_link(url, text=None):
 
 def make_image(url):
     return '<br /><img src="{}" />'.format(url)
+
+def make_youtube_iframe(url):
+    return ('<iframe width="560" height="315" src="{}"'
+            ' frameborder="0" allowfullscreen></iframe>').format(url)
 
 def make_quote(text, author_name, author_handle):
     return ('<p><strong>{}</strong> {}:</p>'
@@ -113,6 +125,16 @@ def parse_quote_content(branch):
         branch.select_one('.QuoteTweet-screenname').text
     )
 
+def parse_card2_summary(branch):
+    return '<br />' + make_link(
+        unshorten_url(branch.div['data-card-url'])
+    )
+
+def parse_card2_player(branch):
+    return '<br />' + make_youtube_iframe(
+        unshorten_url(branch.div['data-card-url'])
+    )
+
 def parse_full_tweet_content(branch):
     yield from parse_text_content(branch.select_one('p.TweetTextSize'))
     if branch.select_one('.QuoteTweet'):
@@ -124,7 +146,13 @@ def parse_full_tweet_content(branch):
             branch.select_one('.AdaptiveMedia')
         )
     elif branch.select_one('.card2'):
-        yield make_not_supported()
+        branch = branch.select_one('.card2')
+        if branch['data-card2-name'] in ('summary', 'summary_large_image'):
+            yield parse_card2_summary(branch)
+        elif branch['data-card2-name'] == 'player':
+            yield parse_card2_player(branch)
+        else:
+            yield make_not_supported()
 
 def parse_tweet_element(branch):
     branch = branch.div

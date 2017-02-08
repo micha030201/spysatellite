@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from multiprocessing.dummy import Pool
 
 import requests
 from bs4 import BeautifulSoup
@@ -18,6 +19,7 @@ def unshorten_url(url):
     return requests.get(
         url,
         allow_redirects=False,
+        timeout=1,
         # We would get 200 + js/http-equiv with browser User-Agent
         headers={'User-Agent': ''}
     ).headers['location']
@@ -58,9 +60,6 @@ def make_quote(text, author_name, author_handle):
 def make_not_supported():
     return '<br /><i>[UNSUPPORTED-MEDIA]</i>'
 
-
-class Ignore(Exception):
-    pass
 
 def parse_text_content(node):
     for subnode in node.children:
@@ -155,10 +154,6 @@ def parse_full_tweet_content(branch):
             yield make_not_supported()
 
 def parse_tweet_element(branch):
-    branch = branch.div
-    if 'user-pinned' in branch['class']:  # no support for :not()
-        raise Ignore()
-    
     if branch.get('data-retweeter'):
         tweet_type = 'Retweet'
     elif branch.get('data-is-reply-to'):
@@ -191,6 +186,17 @@ def parse_tweet_element(branch):
         published=time_posted
     )
 
+def process_tweet_li(branch):
+    branch = branch.div
+    if 'user-pinned' in branch['class']:  # no support for :not()
+        return
+    
+    try:
+        return parse_tweet_element(branch)
+    except:
+        app.logger.error('\n\n' + node.prettify())
+        raise
+
 def scrape(twitter_path, title='twitter feed'):
     r = requests.get(get_fullpath(twitter_path),
                      headers=HEADERS, timeout=5)
@@ -208,14 +214,11 @@ def scrape(twitter_path, title='twitter feed'):
         icon='https://abs.twimg.com/favicons/favicon.ico',
     )
     
-    for node in soup.select('#stream-items-id > [id|=stream-item-tweet]'):
-        try:
-            feed.add(parse_tweet_element(node))
-        except Ignore:  # I hope 'Ignore' is self-explanatory
-            continue 
-        except:
-            app.logger.error('\n\n' + node.prettify())
-            raise
+    tweet_nodes = soup.select('#stream-items-id > [id|=stream-item-tweet]')
+    with Pool(10) as p:
+         for entry in p.imap_unordered(process_tweet_li, tweet_nodes):
+            if entry is not None:
+                feed.add(entry)
     
     return feed
 

@@ -43,6 +43,7 @@ def make_image(url):
     return '<br /><img src="{}" />'.format(url)
 
 def make_youtube_iframe(url):
+    url = 'https://www.youtube.com/embed/' + url[-11:]
     return ('<iframe width="560" height="315" src="{}"'
             ' frameborder="0" allowfullscreen></iframe>').format(url)
 

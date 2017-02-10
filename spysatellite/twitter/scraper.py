@@ -1,4 +1,5 @@
 import logging
+import traceback
 from datetime import datetime
 from multiprocessing.dummy import Pool
 
@@ -29,7 +30,7 @@ def get_handle_fullpath(handle):
     return get_fullpath(handle.replace('@', ''))
 
 def get_hashtag_fullpath(hashtag):
-    hashtag = hashtag.replace('?src=hash', '').replace('#', '')
+    hashtag = hashtag.replace('#', '')
     hashtag = 'hashtag/{}?f=tweets'.format(hashtag)
     return get_fullpath(hashtag)
 
@@ -43,8 +44,8 @@ def make_image(url):
     return '<br /><img src="{}" />'.format(url)
 
 def make_youtube_iframe(url):
-    url = 'https://www.youtube.com/embed/' + url[-11:]
-    return ('<iframe width="560" height="315" src="{}"'
+    url = 'https://www.youtube.com/embed/' + url[17:]
+    return ('<br /><iframe width="560" height="315" src="{}"'
             ' frameborder="0" allowfullscreen></iframe>').format(url)
 
 def make_quote(text, author_name, author_handle):
@@ -59,7 +60,10 @@ def make_quote(text, author_name, author_handle):
     )
 
 def make_not_supported():
-    return '<br /><i>[UNSUPPORTED-MEDIA]</i>'
+    return '<p><i>[UNSUPPORTED-MEDIA]</i></p>'
+
+def make_quote_unavailable():
+    return '<blockquote><p><i>[UNAVAILABLE-TWEET]</i></p></blockquote>'
 
 
 def parse_text_content(node):
@@ -131,7 +135,7 @@ def parse_card2_summary(branch):
     )
 
 def parse_card2_player(branch):
-    return '<br />' + make_youtube_iframe(
+    return make_youtube_iframe(
         unshorten_url(branch.div['data-card-url'])
     )
 
@@ -141,6 +145,8 @@ def parse_full_tweet_content(branch):
         yield from parse_quote_content(
             branch.select_one('.QuoteTweet .tweet-content')
         )
+    elif branch.select_one('.QuoteTweet--unavailable'):
+        yield make_quote_unavailable()
     elif branch.select_one('.AdaptiveMedia'):
         yield from parse_media_content(
             branch.select_one('.AdaptiveMedia')
@@ -182,7 +188,6 @@ def parse_tweet_element(branch):
         content_type='html',
         author=author,
         url=tweet_link,
-        id=tweet_link,
         updated=time_posted,
         published=time_posted
     )
@@ -195,8 +200,8 @@ def process_tweet_li(branch):
     try:
         return parse_tweet_element(branch)
     except:
-        app.logger.error('\n\n' + node.prettify())
-        raise
+        app.logger.error('\n' + branch.prettify() + traceback.format_exc())
+        return
 
 def scrape(twitter_path, title='twitter feed'):
     r = requests.get(get_fullpath(twitter_path),
@@ -217,7 +222,7 @@ def scrape(twitter_path, title='twitter feed'):
     
     tweet_nodes = soup.select('#stream-items-id > [id|=stream-item-tweet]')
     with Pool(10) as p:
-         for entry in p.imap_unordered(process_tweet_li, tweet_nodes):
+        for entry in p.imap_unordered(process_tweet_li, tweet_nodes):
             if entry is not None:
                 feed.add(entry)
     

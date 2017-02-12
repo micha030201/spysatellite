@@ -5,7 +5,7 @@
 {% block body %}
 <section>
   <h1>Twitter to RSS</h1>
-  <form action="{{ url_for('twitter_searchbar') }}" method="post">
+  <form action="{{ url_for('index') }}" method="post">
     <label>
       <p><i>@nickname, #hashtag, search terms:</i></p>
       <input type="text" name="input_string" autocomplete="off" placeholder="..." required />

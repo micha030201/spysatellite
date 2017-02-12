@@ -1,26 +1,12 @@
-import logging
+import logging.config
 
 from flask import Flask
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_object('spysatellite.default_settings')
+app.config.from_pyfile('spysatellite.cfg', silent=True)
 
-
-file_handler = logging.FileHandler('spysatellite.log')
-#file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(logging.Formatter(
-    '%(asctime)s %(filename)s: %(levelname)s: %(message)s'
-))
-
-app.logger.addHandler(file_handler)
-#app.logger.setLevel(logging.DEBUG)
-
-
-HEADERS = {
-    'Accept-Language': 'en,en-US', 
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-                   AppleWebKit/537.36 (KHTML, like Gecko) \
-                   Chrome/55.0.2883.87 Safari/537.36', 
-}
+app.logger  # Create the logger. Does not work without this line.
+logging.config.dictConfig(app.config['LOGGING_CONFIG'])
 
 
 import spysatellite.views
-import spysatellite.twitter.views

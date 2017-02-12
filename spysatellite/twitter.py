@@ -9,7 +9,7 @@ from werkzeug.utils import escape
 from werkzeug.contrib.atom import AtomFeed, FeedEntry
 from flask import request
 
-from spysatellite import app, HEADERS
+from spysatellite import app
 
 
 def get_fullpath(path):
@@ -37,7 +37,7 @@ def get_hashtag_fullpath(hashtag):
 
 def make_link(url, text=None):
     text = text or url
-    return ('<a href="{}" rel="noreferrer"'
+    return ('<a href="{}" rel="noopener noreferrer"'
             ' target="_blank">{}</a>').format(url, text)
 
 def make_image(url):
@@ -71,6 +71,7 @@ def parse_text_content(node):
         if subnode.name == None:  # Just strings
             yield (
                 escape(subnode)
+                .strip('\n')  # Happens in quotes for some reason
                 # We're gonna hope noone's indenting with single spaces
                 .replace('  ', '&nbsp; ')
                 .replace('\n', '<br />')
@@ -204,8 +205,11 @@ def process_tweet_li(branch):
         return
 
 def scrape(twitter_path, title='twitter feed'):
-    r = requests.get(get_fullpath(twitter_path),
-                     headers=HEADERS, timeout=5)
+    r = requests.get(
+        get_fullpath(twitter_path),
+        headers=app.config['HEADERS_DESKTOP'],
+        timeout=5
+    )
     if r.status_code == 404:
         return 'Twitter returned 404: Not Found. Check your spelling.', 424    
     r.raise_for_status()

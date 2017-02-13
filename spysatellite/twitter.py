@@ -17,6 +17,8 @@ def get_fullpath(path):
     return 'https://twitter.com/' + path
 
 def unshorten_url(url):
+    if not app.config['UNSHORTEN_URLS']:
+        return url
     return requests.get(
         url,
         allow_redirects=False,
@@ -44,7 +46,13 @@ def make_image(url):
     return '<br /><img src="{}" />'.format(url)
 
 def make_youtube_iframe(url):
-    url = 'https://www.youtube.com/embed/' + url[17:]
+    if not app.config['MAKE_IFRAMES']:
+        return '<br />' + make_link(url)
+    if 'youtu.be/' in url:
+        video_id = url[17:]
+    else:
+        video_id = url[32:].replace('&', '?')
+    url = 'https://www.youtube.com/embed/' + video_id
     return ('<br /><iframe width="560" height="315" src="{}"'
             ' frameborder="0" allowfullscreen></iframe>').format(url)
 
@@ -71,7 +79,7 @@ def parse_text_content(node):
         if subnode.name == None:  # Just strings
             yield (
                 escape(subnode)
-                .strip('\n')  # Happens in quotes for some reason
+#                .strip('\n')  # Happens in quotes for some reason
                 # We're gonna hope noone's indenting with single spaces
                 .replace('  ', '&nbsp; ')
                 .replace('\n', '<br />')
@@ -207,7 +215,10 @@ def process_tweet_li(branch):
 def scrape(twitter_path, title='twitter feed'):
     r = requests.get(
         get_fullpath(twitter_path),
-        headers=app.config['HEADERS_DESKTOP'],
+        headers={
+            'Accept-Language': 'en,en-US',
+            'User-Agent': app.config['UA_DESKTOP'],
+        },
         timeout=5
     )
     if r.status_code == 404:

@@ -1,4 +1,4 @@
-# SpySftellite
+# SpySatellite
 
 SpySatellite is a web service that scrapes the Twitter website and displays the results as an Atom feed. User, hashtag, and search feeds are supported. A working copy can be found at [spysatellite.polarorbit.space](https://spysatellite.polarorbit.space/).
 

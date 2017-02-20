@@ -19,7 +19,7 @@
       <h4>So what is this?</h4>
       <p>
         SpySatellite is a service for converting Twitter streams into Atom feeds. Supports user tweets, tweets for a certain hashtag, as well as search results.<br />
-        It is written in Python, using Flask and Beautiful Soup. The code is open-source and <a href="https://github.com/micha030201/spysatellite/">available on GitHub</a>.
+        It is written in Python, using Flask and Beautiful Soup. The code is free and open-source and is <a href="https://github.com/micha030201/spysatellite/">available on GitHub</a>.
       </p>
     </li>
     <li>
@@ -31,31 +31,23 @@
     <li>
       <h4>Is there anything that your service can't do?</h4>
       <p>
-        SpySatellite doesn't do replies correctly: only the reply is shown, not the full chain of tweets. So you know this is a reply, but don't know to what exactly. Hence why they are disabled in feeds by default. In my defence, this is exactly the way it's done on the Twitter website.<br />
+        Polls are not supported, at least not yet. SoundCloud frames are not handled, though YouTube ones are.<br />
         Twitter media, in the form of videos and fat JavaScript frames Twitter calls "gifs" for some bizzare reason, are also not shown.
       </p>
     </li>
     <li>
-      <h4>Can I still enable replies?</h4>
+      <h4>What about replies?</h4>
       <p>
-        Yes you can, add <kbd>/with_replies</kbd> at the end of the feed url.
+        Not shown by default, but you can enable them by appending <kbd>/with_replies</kbd> to the feed url. Note that self-replies don't count as replies and <i>are</i> shown by default.
       </p>
     </li>
     <li>
-      <h4>What are the limits?</h4>
+      <h4>What are the limits of the service?</h4>
       <p>
         Feeds are cached for 17 minutes, as of right now. Rate limit is 6 requests per minute, after the burst of 50 requests. Should be more than enough for now.<br />
         May be changed later, obviously.
       </p>
     </li>
-    <!--<li>
-      <h4>Something isn't working!</h4>
-      <p>
-        If you're getting empty search feeds, it means that Twitter did not find anything for your input. Try searching for something else.<br />
-        Error 500 is most likely the result of Twitter putting something weird in the Tweet markup. They really like doing that. The piece of offending HTML has been logged, and the best thing you can do is wait until I look at the log and add yet another edge case. Or it might also mean that Twitter is down.<br/>
-        If something in the feed itself is broken, please <a href="https://github.com/micha030201/spysatellite/issues/">report the issue on GitHub</a>. 
-      </p>
-    </li>-->
   </ul>
 </section>
 {% endblock %}

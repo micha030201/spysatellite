@@ -5,6 +5,7 @@ from flask import redirect, url_for, render_template, request, abort
 from spysatellite import app
 from spysatellite.twitter import scrape
 
+
 optimal = re.compile('^[a-z0-9_-]+$')
 
 
@@ -37,7 +38,8 @@ def twitter_user(user):
         abort(400)
     twitter_path = user
     title = '@' + user
-    return scrape(twitter_path, title=title)
+    twitter_icon = url_for('static', filename='twitter_icon.png')
+    return scrape(twitter_path, title=title, icon=twitter_icon)
     
 @app.route('/twitter/user/<user>/with_replies')
 def twitter_user_replies(user):
@@ -45,7 +47,8 @@ def twitter_user_replies(user):
         abort(400)
     twitter_path = user + '/with_replies'
     title = '@{} (w/ replies)'.format(user)
-    return scrape(twitter_path, title=title)
+    twitter_icon = url_for('static', filename='twitter_icon.png')
+    return scrape(twitter_path, title=title, icon=twitter_icon)
 
 @app.route('/twitter/hashtag/<hashtag>')
 def twitter_hashtag(hashtag):
@@ -53,7 +56,8 @@ def twitter_hashtag(hashtag):
         abort(400)
     twitter_path = 'hashtag/{}?f=tweets'.format(hashtag)
     title = '#' + hashtag
-    return scrape(twitter_path, title=title)
+    twitter_icon = url_for('static', filename='twitter_icon.png')
+    return scrape(twitter_path, title=title, icon=twitter_icon)
 
 @app.route('/twitter/search/<search>')
 def twitter_search(search):
@@ -61,7 +65,8 @@ def twitter_search(search):
         abort(400)
     twitter_path = 'search?f=tweets&q=' + search
     title = '🔎' + search.replace('_', ' ')
-    return scrape(twitter_path, title=title)
+    twitter_icon = url_for('static', filename='twitter_icon.png')
+    return scrape(twitter_path, title=title, icon=twitter_icon)
 
 
 

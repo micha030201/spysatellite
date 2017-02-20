@@ -10,7 +10,7 @@ if not app.config['UNSHORTEN_URLS']:
     app.config['MAKE_IFRAMES'] = False
 
 
-if app.config['ENABLE_LOGGING']:
+if app.config['CONFIGURE_LOGGING']:
     app.logger  # Create the logger. Does not work without this line.
     logging.config.dictConfig(app.config['LOGGING_CONFIG'])
 

@@ -48,10 +48,15 @@ def make_image(url):
 def make_youtube_iframe(url):
     if not app.config['MAKE_IFRAMES']:
         return '<br />' + make_link(url)
+    
+    is_ssl = 1 if 'https://' in url else 0
     if 'youtu.be/' in url:
-        video_id = url[17:]
+        video_id = url[16 + is_ssl:]
+    elif 'youtube.com/' in url:
+        video_id = url[31 + is_ssl:].replace('&', '?')
     else:
-        video_id = url[32:].replace('&', '?')
+        return '<br />' + make_link(url)
+    
     url = 'https://www.youtube.com/embed/' + video_id
     return ('<br /><iframe width="560" height="315" src="{}"'
             ' frameborder="0" allowfullscreen></iframe>').format(url)
@@ -68,7 +73,7 @@ def make_quote(text, author_name, author_handle):
     )
 
 def make_not_supported():
-    return '<p><i>[UNSUPPORTED-MEDIA]</i></p>'
+    return '<br /><i>[UNSUPPORTED-MEDIA]</i>'
 
 def make_quote_unavailable():
     return '<blockquote><p><i>[UNAVAILABLE-TWEET]</i></p></blockquote>'
@@ -212,7 +217,7 @@ def process_tweet_li(branch):
         app.logger.error('\n' + branch.prettify() + traceback.format_exc())
         return
 
-def scrape(twitter_path, title='twitter feed'):
+def scrape(twitter_path, title='twitter feed', icon=''):
     r = requests.get(
         get_fullpath(twitter_path),
         headers={
@@ -232,7 +237,7 @@ def scrape(twitter_path, title='twitter feed'):
         feed_url=request.url,
         url=request.host_url,
         subtitle=soup.select_one('meta[name=description]')['content'],
-        icon='https://abs.twimg.com/favicons/favicon.ico',
+        icon=icon,
     )
     
     tweet_nodes = soup.select('#stream-items-id > [id|=stream-item-tweet]')

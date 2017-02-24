@@ -1,9 +1,10 @@
 
 UA_DESKTOP = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-              'AppleWebKit/537.36 (KHTML, like Gecko)'
-              'Chrome/55.0.2883.87 Safari/537.36')
+              ' AppleWebKit/537.36 (KHTML, like Gecko)'
+              ' Chrome/55.0.2883.87 Safari/537.36')
 
 CONFIGURE_LOGGING = True
+LOG_FULL_HTML = False
 LOGGING_CONFIG = {
     'version': 1,
     'disable_existing_loggers': False,

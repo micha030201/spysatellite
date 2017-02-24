@@ -136,11 +136,20 @@ def parse_quote_content(branch):
             )
         elif branch.select_one('.QuoteMedia-videoPreview'):
             yield make_not_supported()
+    handle_element = (
+        branch.select_one('.QuoteTweet-screenname') or
+        branch.select_one('.username')
+    )
+    fullname = (
+        branch.select_one('.QuoteTweet-fullname')
+        .text
+        .replace('\xa0', '') # for &nbsp; spaces in emoji pictures
+        .replace('Verified account', ' ✅')
+    )
     yield make_quote(
         ''.join(content()),
-        # replace is there for &nbsp; spaces in emoji pictures
-        branch.select_one('.QuoteTweet-fullname').text.replace('\xa0', ''),
-        branch.select_one('.QuoteTweet-screenname').text
+        fullname,
+        handle_element.text
     )
 
 def parse_card2_summary(branch):
@@ -214,7 +223,11 @@ def process_tweet_li(branch):
     try:
         return parse_tweet_element(branch)
     except:
-        app.logger.error('\n' + branch.prettify() + traceback.format_exc())
+        if app.config['LOG_FULL_HTML']:
+            debug_html = branch.prettify()
+        else:
+            debug_html = branch.prettify()[:1100] + '\n'
+        app.logger.error('\n' + debug_html + traceback.format_exc())
         return
 
 def scrape(twitter_path, title='twitter feed', icon=''):
@@ -242,7 +255,7 @@ def scrape(twitter_path, title='twitter feed', icon=''):
     
     tweet_nodes = soup.select('#stream-items-id > [id|=stream-item-tweet]')
     with Pool(10) as p:
-        for entry in p.imap_unordered(process_tweet_li, tweet_nodes):
+        for entry in p.imap(process_tweet_li, tweet_nodes):
             if entry is not None:
                 feed.add(entry)
     
